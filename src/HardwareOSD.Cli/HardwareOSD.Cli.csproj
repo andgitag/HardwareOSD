@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <RootNamespace>HardwareOSD.Cli</RootNamespace>
+    <AssemblyName>HardwareOSD.Cli</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\HardwareOSD.Core\HardwareOSD.Core.csproj" />
+  </ItemGroup>
+
+</Project>

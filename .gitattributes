@@ -1,0 +1,37 @@
+# Normalize text files to LF in the repository.
+* text=auto eol=lf
+
+# Source and project files
+*.cs text diff=csharp
+*.xaml text
+*.csproj text
+*.sln text
+*.props text
+*.targets text
+*.manifest text
+*.json text
+*.md text
+*.ps1 text
+*.py text
+*.txt text
+*.yml text
+*.yaml text
+*.config text
+.gitignore text
+.gitattributes text
+
+# Binary assets
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.bmp binary
+*.ico binary
+*.zip binary
+*.dll binary
+*.exe binary
+*.pdb binary
+*.pfx binary
+*.p12 binary
+*.snk binary

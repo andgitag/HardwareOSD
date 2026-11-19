@@ -1,0 +1,246 @@
+<Window x:Class="HardwareOSD.App.Views.ClassicRowsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:l="clr-namespace:HardwareOSD.App.Localization"
+        xmlns:ov="clr-namespace:HardwareOSD.App.Overlay"
+        Title="{l:LocText osd_rows_title}"
+        Width="1200" Height="780" MinWidth="980" MinHeight="640"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource AppBackgroundBrush}"
+        Foreground="{DynamicResource TextBrush}"
+        FontFamily="{DynamicResource UiFont}"
+        TextOptions.TextFormattingMode="Display"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Background="{DynamicResource ChromeBrush}"
+                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1"
+                Padding="14,9">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="{l:LocText osd_profile}" Style="{StaticResource FieldLabel}"
+                               VerticalAlignment="Center" Margin="0,0,7,0" />
+                    <ComboBox x:Name="ProfileCombo" Width="180"
+                              AutomationProperties.AutomationId="OsdProfileCombo"
+                              SelectionChanged="ProfileCombo_SelectionChanged" />
+                    <TextBox x:Name="ProfileNameBox" Width="170" Margin="7,0,0,0"
+                             AutomationProperties.AutomationId="OsdProfileNameBox" />
+                    <Button x:Name="RenameProfileButton" Content="{l:LocText osd_rename}"
+                            Style="{StaticResource FlatButton}" Margin="6,0,0,0"
+                            Click="RenameProfile_Click" />
+                    <Button x:Name="DuplicateProfileButton" Content="{l:LocText osd_duplicate}"
+                            Style="{StaticResource FlatButton}" Margin="6,0,0,0"
+                            Click="DuplicateProfile_Click" />
+                    <Button x:Name="DeleteProfileButton" Content="{l:LocText osd_delete}"
+                            Style="{StaticResource FlatButton}" Margin="6,0,0,0"
+                            Click="DeleteProfile_Click" />
+                    <ComboBox x:Name="RootLayoutCombo" Width="150" Margin="12,0,0,0"
+                              AutomationProperties.AutomationId="OsdRootLayoutCombo"
+                              SelectionChanged="RootLayoutCombo_SelectionChanged"
+                              ToolTip="{l:LocText osd_root_layout}" />
+                </StackPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button x:Name="NewProfileButton" Content="{l:LocText osd_new_profile}"
+                            Style="{StaticResource FlatButton}" Margin="6,0,0,0"
+                            Click="NewProfile_Click" />
+                    <Button x:Name="ImportProfileButton" Content="{l:LocText osd_import}"
+                            Style="{StaticResource FlatButton}" Margin="6,0,0,0"
+                            Click="ImportProfile_Click" />
+                    <Button x:Name="ExportProfileButton" Content="{l:LocText osd_export}"
+                            Style="{StaticResource FlatButton}" Margin="6,0,0,0"
+                            Click="ExportProfile_Click" />
+                </StackPanel>
+                <TextBlock Text="{l:LocText osd_builder_subtitle}" Style="{StaticResource Muted}"
+                           VerticalAlignment="Center" Margin="18,0,10,0"
+                           TextTrimming="CharacterEllipsis" />
+            </DockPanel>
+        </Border>
+
+        <Grid Grid.Row="1" Margin="12,10,12,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="272" MinWidth="240" MaxWidth="360" />
+                <ColumnDefinition Width="10" />
+                <ColumnDefinition Width="*" MinWidth="300" />
+                <ColumnDefinition Width="10" />
+                <ColumnDefinition Width="370" MinWidth="320" MaxWidth="460" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Profile and style settings -->
+            <Border Grid.Column="0" Style="{StaticResource Surface}" Padding="0">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                              Padding="12,10">
+                    <StackPanel>
+                        <StackPanel x:Name="TileDesignPanel" Visibility="Collapsed">
+                            <TextBlock Text="{l:LocText osd_tile_library}" Style="{StaticResource SectionTitle}" />
+                            <ComboBox x:Name="TileFamilyCombo" Margin="0,6,0,0"
+                                      AutomationProperties.AutomationId="TileFamilyCombo"
+                                      SelectionChanged="TileFamilyCombo_SelectionChanged" />
+                            <ListBox x:Name="TileDesignList" Height="250" Margin="0,6,0,0"
+                                     AutomationProperties.AutomationId="TileDesignList"
+                                     BorderThickness="0" Background="Transparent"
+                                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                     SelectionChanged="TileDesignList_SelectionChanged" />
+                            <TextBlock x:Name="TileDesignInfo" Style="{StaticResource Muted}"
+                                       TextWrapping="Wrap" Margin="0,5,0,0" />
+                            <Border Style="{StaticResource Divider}" />
+                            <TextBlock Text="{l:LocText osd_tile_scale_opacity}" Style="{StaticResource SectionTitle}" />
+                            <StackPanel x:Name="TileSettingsPanel" Margin="0,6,0,0" />
+                            <Border Style="{StaticResource Divider}" />
+                        </StackPanel>
+                        <StackPanel x:Name="StyleSectionPanel">
+                        <TextBlock Text="{l:LocText osd_style}" Style="{StaticResource SectionTitle}" />
+                        <ComboBox x:Name="StyleCombo" Margin="0,6,0,0"
+                                  AutomationProperties.AutomationId="OsdStyleCombo"
+                                  SelectionChanged="StyleCombo_SelectionChanged" />
+                        <TextBlock Text="{l:LocText osd_style_hint}" Style="{StaticResource Muted}"
+                                   TextWrapping="Wrap" Margin="0,5,0,0" />
+                        <Border Style="{StaticResource Divider}" />
+                        <TextBlock Text="{l:LocText osd_style_colors}" Style="{StaticResource SectionTitle}" />
+                        <StackPanel x:Name="StyleColorPanel" Margin="0,6,0,0" />
+                        <Border Style="{StaticResource Divider}" />
+                        <TextBlock Text="{l:LocText osd_style_typography}" Style="{StaticResource SectionTitle}" />
+                        <StackPanel x:Name="StyleTypographyPanel" Margin="0,6,0,0" />
+                        <Border Style="{StaticResource Divider}" />
+                        <TextBlock Text="{l:LocText osd_style_surface}" Style="{StaticResource SectionTitle}" />
+                        <StackPanel x:Name="StyleSurfacePanel" Margin="0,6,0,0" />
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+
+            <!-- Element tree -->
+            <Border Grid.Column="2" Style="{StaticResource Surface}" Padding="0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Border Padding="10,8" BorderBrush="{DynamicResource BorderBrush}"
+                            BorderThickness="0,0,0,1">
+                        <StackPanel>
+                            <DockPanel>
+                                <TextBlock Text="{l:LocText osd_structure}" Style="{StaticResource SectionTitle}"
+                                           VerticalAlignment="Center" />
+                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                    <Button x:Name="UndoButton" Content="{l:LocText osd_undo}"
+                                            Style="{StaticResource FlatButton}" Click="Undo_Click"
+                                            Margin="0,0,5,0" />
+                                    <Button x:Name="RedoButton" Content="{l:LocText osd_redo}"
+                                            Style="{StaticResource FlatButton}" Click="Redo_Click" />
+                                </StackPanel>
+                            </DockPanel>
+                            <DockPanel Margin="0,7,0,0">
+                                <ComboBox x:Name="AddKindCombo" Width="170"
+                                          AutomationProperties.AutomationId="OsdAddKindCombo" />
+                                <Button x:Name="AddElementButton" Content="{l:LocText osd_add}"
+                                        Style="{StaticResource PrimaryButton}" Margin="6,0,0,0"
+                                        Click="AddElement_Click" />
+                                <Button x:Name="DuplicateElementButton" Content="{l:LocText osd_duplicate_item}"
+                                        Style="{StaticResource FlatButton}" Margin="6,0,0,0"
+                                        Click="DuplicateElement_Click" />
+                                <Button x:Name="DeleteElementButton" Content="{l:LocText osd_delete_item}"
+                                        Style="{StaticResource DangerButton}" Margin="6,0,0,0"
+                                        Click="DeleteElement_Click" />
+                                <Button x:Name="UpElementButton" Content="{l:LocText osd_move_up}"
+                                        Style="{StaticResource FlatButton}" Margin="6,0,0,0"
+                                        Click="MoveUp_Click" />
+                                <Button x:Name="DownElementButton" Content="{l:LocText osd_move_down}"
+                                        Style="{StaticResource FlatButton}" Margin="6,0,0,0"
+                                        Click="MoveDown_Click" />
+                            </DockPanel>
+                        </StackPanel>
+                    </Border>
+                    <ListBox Grid.Row="1" x:Name="ElementList" Margin="6"
+                             AutomationProperties.AutomationId="OsdElementList"
+                             BorderThickness="0" Background="Transparent"
+                             AllowDrop="True"
+                             SelectionChanged="ElementList_SelectionChanged"
+                             PreviewMouseLeftButtonDown="ElementList_PreviewMouseLeftButtonDown"
+                             PreviewMouseMove="ElementList_PreviewMouseMove"
+                             Drop="ElementList_Drop"
+                             DragOver="ElementList_DragOver" />
+                </Grid>
+            </Border>
+
+            <!-- Live preview and selected element properties -->
+            <Grid Grid.Column="4">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="250" />
+                    <RowDefinition Height="10" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Border Grid.Row="0" Style="{StaticResource Surface}" Padding="0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <DockPanel Margin="10,8">
+                            <TextBlock Text="{l:LocText osd_preview}" Style="{StaticResource SectionTitle}"
+                                       VerticalAlignment="Center" />
+                            <TextBlock x:Name="PreviewStateText" DockPanel.Dock="Right"
+                                       Style="{StaticResource Caption}" VerticalAlignment="Center" />
+                        </DockPanel>
+                        <Border Grid.Row="1" Background="{DynamicResource PreviewBackgroundBrush}"
+                                ClipToBounds="True" Padding="8">
+                            <Viewbox Stretch="Uniform" StretchDirection="DownOnly"
+                                     HorizontalAlignment="Left" VerticalAlignment="Top">
+                                <ov:OverlaySurface x:Name="PreviewSurface" />
+                            </Viewbox>
+                        </Border>
+                        <TextBlock Grid.Row="2" Text="{l:LocText osd_preview_demo_hint}"
+                                   Style="{StaticResource Caption}" TextWrapping="Wrap"
+                                   Margin="10,5,10,8" />
+                    </Grid>
+                </Border>
+                <Border Grid.Row="2" Style="{StaticResource Surface}" Padding="0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="{l:LocText osd_item_settings}" Style="{StaticResource SectionTitle}"
+                                   Margin="12,9,12,0" />
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Disabled" Padding="12,8,12,12">
+                            <StackPanel x:Name="PropertyPanel" />
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
+
+        <Border Grid.Row="2" Background="{DynamicResource ChromeBrush}"
+                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0"
+                Padding="12,8">
+            <DockPanel>
+                <StackPanel Orientation="Horizontal">
+                    <Button x:Name="ApplyButton" Content="{l:LocText osd_apply}"
+                            Style="{StaticResource PrimaryButton}" Click="Apply_Click" />
+                    <Button x:Name="RevertButton" Content="{l:LocText osd_revert}"
+                            Style="{StaticResource FlatButton}" Margin="6,0,0,0"
+                            Click="Revert_Click" />
+                    <Button x:Name="ResetStyleButton" Content="{l:LocText osd_reset_style}"
+                            Style="{StaticResource FlatButton}" Margin="6,0,0,0"
+                            Click="ResetStyle_Click" />
+                    <Button x:Name="DefaultProfileButton" Content="{l:LocText osd_default_profile}"
+                            Style="{StaticResource FlatButton}" Margin="6,0,0,0"
+                            Click="DefaultProfile_Click" />
+                </StackPanel>
+                <TextBlock x:Name="StatusText" DockPanel.Dock="Right" Style="{StaticResource Muted}"
+                           VerticalAlignment="Center" Margin="14,0,0,0"
+                           TextTrimming="CharacterEllipsis" />
+                <Button x:Name="CloseButton" Content="{l:LocText osd_close}"
+                        Style="{StaticResource FlatButton}" DockPanel.Dock="Right"
+                        Margin="10,0,0,0" Click="Close_Click" />
+            </DockPanel>
+        </Border>
+    </Grid>
+</Window>

@@ -1,0 +1,1470 @@
+<Window x:Class="HardwareOSD.App.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:l="clr-namespace:HardwareOSD.App.Localization"
+        xmlns:ov="clr-namespace:HardwareOSD.App.Overlay"
+        xmlns:v="clr-namespace:HardwareOSD.App.Views"
+        Title="{l:LocText app_title}"
+        Width="1080"
+        Height="720"
+        MinWidth="920"
+        MinHeight="600"
+        Background="{DynamicResource AppBackgroundBrush}"
+        Foreground="{DynamicResource TextBrush}"
+        FontFamily="{DynamicResource UiFont}"
+        WindowStartupLocation="CenterScreen"
+        TextOptions.TextFormattingMode="Display"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Navigation and content: the Windows title bar carries the product name; the in-app
+             duplicate header was removed and monitoring state lives in the footer strip. -->
+        <Grid Grid.Row="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!-- Top navigation: the standard Windows title bar keeps minimize/maximize/close. -->
+            <Border Grid.Row="0" Background="{DynamicResource ChromeBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1"
+                    Padding="12,5">
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="HardwareOSD" FontSize="14" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextBrush}" VerticalAlignment="Center"
+                                   Margin="2,0,14,0" />
+                        <ToggleButton x:Name="NavSystem" Style="{StaticResource TabButton}"
+                                      AutomationProperties.AutomationId="NavSystem" Tag="system"
+                                      IsChecked="True" Content="{l:LocText nav_system}" />
+                        <ToggleButton x:Name="NavOverlay" Style="{StaticResource TabButton}"
+                                      AutomationProperties.AutomationId="NavOverlay" Tag="overlay"
+                                      Content="{l:LocText nav_overlay}" />
+                        <ToggleButton x:Name="NavMetrics" Style="{StaticResource TabButton}"
+                                      AutomationProperties.AutomationId="NavMetrics" Tag="metrics"
+                                      Content="{l:LocText nav_metrics}" />
+                        <ToggleButton x:Name="NavRecording" Style="{StaticResource TabButton}"
+                                      AutomationProperties.AutomationId="NavRecording" Tag="recording"
+                                      Content="{l:LocText nav_recording}" />
+                    </StackPanel>
+                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center"
+                                HorizontalAlignment="Right">
+                        <ToggleButton x:Name="NavSettings" Style="{StaticResource TabButton}"
+                                      AutomationProperties.AutomationId="NavSettings" Tag="settings"
+                                      Content="{l:LocText nav_settings}" />
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+
+            <ScrollViewer Grid.Row="1" x:Name="PageScroll" VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled" Padding="0,0,0,0">
+                <Grid>
+                    <!-- ===================================================== -->
+                    <!-- System                                                -->
+                    <!-- ===================================================== -->
+                    <StackPanel x:Name="PanelSystem">
+                        <v:SystemPageView x:Name="SystemView"
+                                          MinHeight="{Binding ViewportHeight, ElementName=PageScroll}" />
+                    </StackPanel>
+
+                    <!-- ===================================================== -->
+                    <!-- Overlay                                               -->
+                    <!-- ===================================================== -->
+                    <StackPanel x:Name="PanelOverlay" Visibility="Collapsed" Margin="18,14,18,16">
+                        <Grid Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="{l:LocText overlay_page_title}" Style="{StaticResource PageTitle}" />
+                                <TextBlock Text="{l:LocText overlay_page_subtitle}" Style="{StaticResource PageSubtitle}" />
+                            </StackPanel>
+                        </Grid>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="344" />
+                                <ColumnDefinition Width="14" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Left: persistent OSD items; right: settings and preview -->
+                            <StackPanel Grid.Column="0">
+                                <Border Style="{StaticResource Surface}" Padding="0">
+                                    <StackPanel>
+                                        <Border Padding="11,8" BorderBrush="{DynamicResource BorderBrush}"
+                                                BorderThickness="0,0,0,1">
+                                            <DockPanel>
+                                                <TextBlock Text="{l:LocText overlay_items_title}"
+                                                           Style="{StaticResource SectionTitle}" VerticalAlignment="Center" />
+                                                <Button DockPanel.Dock="Right"
+                                                        Content="{l:LocText osd_open_builder}"
+                                                        Style="{StaticResource FlatButton}"
+                                                        Click="OpenOsdBuilder_Click" />
+                                            </DockPanel>
+                                        </Border>
+                                        <StackPanel Margin="10,8,10,10">
+                                            <TextBox x:Name="OverlayItemSearchBox"
+                                                     AutomationProperties.AutomationId="OverlayItemSearchBox"
+                                                     ToolTip="{l:LocText overlay_items_search_hint}"
+                                                     TextChanged="OverlayItemSearchBox_TextChanged" />
+                                            <ListBox x:Name="OverlayItemsList" Height="300" Margin="0,6,0,0"
+                                                     AutomationProperties.AutomationId="OverlayItemsList"
+                                                     BorderThickness="0" Background="Transparent"
+                                                     SelectionChanged="OverlayItemsList_SelectionChanged" />
+                                            <TextBlock Text="{l:LocText overlay_items_hint}" Style="{StaticResource Caption}"
+                                                       TextWrapping="Wrap" Margin="0,5,0,0" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Style="{StaticResource Surface}">
+                                    <StackPanel>
+                                        <TextBlock Text="{l:LocText osd_engine_title}" Style="{StaticResource SectionTitle}" />
+                                        <TextBlock Text="{l:LocText osd_engine_hint}" Style="{StaticResource Muted}"
+                                                   Margin="0,4,0,0" TextWrapping="Wrap" />
+                                        <Grid Margin="0,8,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="74" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{l:LocText osd_profile}" Style="{StaticResource FieldLabel}" />
+                                            <ComboBox Grid.Column="1" x:Name="OsdProfileCombo"
+                                                      AutomationProperties.AutomationId="OsdActiveProfileCombo"
+                                                      SelectionChanged="OsdProfileCombo_SelectionChanged" />
+                                        </Grid>
+                                        <Button x:Name="OpenOsdBuilderButton"
+                                                Content="{l:LocText osd_open_builder}"
+                                                Style="{StaticResource PrimaryButton}"
+                                                HorizontalAlignment="Left" Margin="0,8,0,0"
+                                                AutomationProperties.AutomationId="OpenOsdBuilderButton"
+                                                Click="OpenOsdBuilder_Click" />
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Style="{StaticResource Surface}">
+                                    <StackPanel>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{l:LocText overlay_group_output}" Style="{StaticResource SectionTitle}" />
+                                            <CheckBox Grid.Column="1" x:Name="ChkOverlayEnabled"
+                                                      Content="{l:LocText behavior_enabled}"
+                                                      AutomationProperties.AutomationId="ChkOverlayEnabled"
+                                                      VerticalAlignment="Center" Margin="8,0,0,0" />
+                                        </Grid>
+                                        <TextBlock Text="{l:LocText overlay_hint}" Style="{StaticResource Muted}"
+                                                   Margin="0,5,0,0" />
+                                        <Border Style="{StaticResource Divider}" />
+                                        <UniformGrid Columns="2">
+                                            <CheckBox x:Name="ChkBackground" Content="{l:LocText appearance_show_background}" />
+                                            <CheckBox x:Name="ChkShadow" Content="{l:LocText behavior_shadow}" />
+                                            <CheckBox x:Name="ChkLabels" Content="{l:LocText behavior_labels}" />
+                                            <CheckBox x:Name="ChkUnits" Content="{l:LocText behavior_units}" />
+                                            <CheckBox x:Name="ChkSeparators" Content="{l:LocText behavior_separators}" />
+                                            <CheckBox x:Name="ChkSparklines" Content="{l:LocText behavior_sparklines}" />
+                                            <CheckBox x:Name="ChkWarnings" Content="{l:LocText behavior_warning_colors}" />
+                                        </UniformGrid>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Style="{StaticResource Surface}">
+                                    <StackPanel>
+                                        <TextBlock Text="{l:LocText behavior_position}" Style="{StaticResource SectionTitle}" />
+                                        <Grid Margin="0,8,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="60" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{l:LocText behavior_monitor}" Style="{StaticResource FieldLabel}" />
+                                            <ComboBox Grid.Column="1" x:Name="MonitorCombo"
+                                                      AutomationProperties.AutomationId="MonitorCombo" />
+                                        </Grid>
+
+                                        <Grid Margin="0,9,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="126" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel>
+                                                <TextBlock Text="{l:LocText behavior_anchor}" Style="{StaticResource FieldLabel}"
+                                                           Margin="0,0,0,3" />
+                                                <UniformGrid x:Name="AnchorGrid" Rows="3" Columns="3"
+                                                             Width="126" Height="72" HorizontalAlignment="Left" />
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Top">
+                                                <TextBlock Text="{l:LocText behavior_offset_x}" Style="{StaticResource FieldLabel}" />
+                                                <TextBox x:Name="OffsetXBox" AutomationProperties.AutomationId="OffsetXBox"
+                                                         Margin="0,3,0,6" />
+                                                <TextBlock Text="{l:LocText behavior_offset_y}" Style="{StaticResource FieldLabel}" />
+                                                <TextBox x:Name="OffsetYBox" AutomationProperties.AutomationId="OffsetYBox"
+                                                         Margin="0,3,0,0" />
+                                            </StackPanel>
+                                        </Grid>
+
+                                        <TextBlock x:Name="CustomPositionText" Style="{StaticResource Muted}"
+                                                   Margin="0,8,0,0" />
+                                        <WrapPanel Margin="0,8,0,0">
+                                            <Button x:Name="MoveOverlayButton"
+                                                    Content="{l:LocText behavior_move}"
+                                                    Style="{StaticResource FlatButton}" Margin="0,0,6,0"
+                                                    Click="MoveOverlay_Click" />
+                                            <Button x:Name="ResetPositionButton"
+                                                    Content="{l:LocText behavior_reset_position}"
+                                                    Style="{StaticResource FlatButton}"
+                                                    Click="ResetPosition_Click" />
+                                        </WrapPanel>
+                                        <CheckBox x:Name="ChkClickThrough"
+                                                  Content="{l:LocText behavior_click_through}"
+                                                  Margin="0,9,0,0" />
+                                        <TextBlock Text="{l:LocText behavior_click_hint}" Style="{StaticResource Muted}"
+                                                   Margin="0,4,0,0" />
+                                        <TextBlock Text="{l:LocText overlay_behavior_hint}" Style="{StaticResource Muted}"
+                                                   Margin="0,4,0,0" />
+                                    <StackPanel x:Name="LegacyLayoutSection">
+                                    <Border Style="{StaticResource Divider}" />
+                                        <TextBlock Text="{l:LocText behavior_layout}" Style="{StaticResource SectionTitle}" />
+                                        <StackPanel x:Name="LayoutButtons" Orientation="Horizontal" Margin="0,7,0,0" />
+                                        <Border Style="{StaticResource Divider}" />
+                                        <TextBlock Text="{l:LocText behavior_presets}" Style="{StaticResource FieldLabel}" />
+                                        <WrapPanel Margin="0,6,0,0">
+                                            <Button Content="{l:LocText behavior_preset_compact}"
+                                                    AutomationProperties.AutomationId="PresetCompact"
+                                                    Style="{StaticResource FlatButton}" Margin="0,0,6,5"
+                                                    Click="PresetCompact_Click" />
+                                            <Button Content="{l:LocText behavior_preset_balanced}"
+                                                    AutomationProperties.AutomationId="PresetBalanced"
+                                                    Style="{StaticResource FlatButton}" Margin="0,0,6,5"
+                                                    Click="PresetBalanced_Click" />
+                                            <Button Content="{l:LocText behavior_preset_detailed}"
+                                                    AutomationProperties.AutomationId="PresetDetailed"
+                                                    Style="{StaticResource FlatButton}"
+                                                    Click="PresetDetailed_Click" />
+                                        </WrapPanel>
+                                    </StackPanel>
+                                    <TextBlock x:Name="TileLayoutHint" Text="{l:LocText overlay_tile_layout_hint}"
+                                               Style="{StaticResource Muted}" Margin="0,8,0,0"
+                                               TextWrapping="Wrap" Visibility="Collapsed" />
+                                    </StackPanel>
+                                </Border>
+
+                            </StackPanel>
+
+                            <!-- Right: live preview and visual appearance -->
+                            <StackPanel Grid.Column="2">
+                                <Border Style="{StaticResource Surface}" Padding="0">
+                                    <StackPanel>
+                                        <Border Padding="11,8" BorderBrush="{DynamicResource BorderBrush}"
+                                                BorderThickness="0,0,0,1">
+                                            <DockPanel>
+                                                <Border DockPanel.Dock="Right" Background="{DynamicResource PanelAltBrush}"
+                                                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                                                        CornerRadius="2" Padding="5,2">
+                                                    <TextBlock x:Name="PreviewScaleText" Style="{StaticResource Caption}"
+                                                               FontSize="9" />
+                                                </Border>
+                                                <TextBlock Text="{l:LocText overlay_preview}"
+                                                           Style="{StaticResource SectionTitle}" VerticalAlignment="Center" />
+                                            </DockPanel>
+                                        </Border>
+                                        <Border Height="238" Background="{DynamicResource PreviewBackgroundBrush}"
+                                                ClipToBounds="True" Padding="12">
+                                            <Viewbox Stretch="Uniform" StretchDirection="DownOnly"
+                                                     HorizontalAlignment="Left" VerticalAlignment="Top">
+                                                <ov:OverlaySurface x:Name="PreviewSurface" Margin="0" />
+                                            </Viewbox>
+                                        </Border>
+                                        <Border Padding="11,9" BorderBrush="{DynamicResource BorderBrush}"
+                                                BorderThickness="0,1,0,0">
+                                            <StackPanel>
+                                                <TextBlock x:Name="OverlaySummaryText" Style="{StaticResource Muted}" />
+                                                <TextBlock Text="{l:LocText overlay_preview_hint}"
+                                                           Style="{StaticResource Caption}" Margin="0,5,0,0"
+                                                           TextWrapping="Wrap" />
+                                            </StackPanel>
+                                        </Border>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Style="{StaticResource Surface}">
+                                    <StackPanel>
+                                        <TextBlock Text="{l:LocText overlay_group_colors}" Style="{StaticResource SectionTitle}" />
+                                        <Grid Margin="0,7,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="112" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{l:LocText appearance_palette}" Style="{StaticResource FieldLabel}" />
+                                            <StackPanel Grid.Column="1" x:Name="ThemeButtons" Orientation="Horizontal" />
+                                        </Grid>
+                                        <TextBlock Text="{l:LocText overlay_palette_hint}"
+                                                   Style="{StaticResource Muted}" Margin="0,4,0,0" TextWrapping="Wrap" />
+                                        <TextBlock Text="{l:LocText appearance_background_preset}"
+                                                   Style="{StaticResource FieldLabel}" Margin="0,7,0,0" />
+                                        <StackPanel x:Name="BackgroundPresetPanel" Orientation="Horizontal"
+                                                    Margin="0,4,0,7" />
+                                        <StackPanel x:Name="ColorRows" />
+                                        <TextBlock Text="{l:LocText appearance_background_hint}"
+                                                   Style="{StaticResource Muted}" Margin="0,5,0,0" />
+
+                                        <Border Style="{StaticResource Divider}" />
+                                        <TextBlock Text="{l:LocText appearance_surface}" Style="{StaticResource SectionTitle}" />
+                                        <Grid Margin="0,7,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="112" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="46" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{l:LocText appearance_background_opacity}" Style="{StaticResource FieldLabel}" />
+                                            <Slider Grid.Column="1" x:Name="BgOpacitySlider" Minimum="0" Maximum="100"
+                                                    TickFrequency="1" IsSnapToTickEnabled="True" />
+                                            <TextBlock Grid.Column="2" x:Name="BgOpacityValue"
+                                                       Style="{StaticResource ValueText}" HorizontalAlignment="Right" />
+                                        </Grid>
+                                        <Grid Margin="0,3,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="112" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="46" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{l:LocText appearance_corner_radius}" Style="{StaticResource FieldLabel}" />
+                                            <Slider Grid.Column="1" x:Name="CornerSlider" Minimum="0" Maximum="24"
+                                                    TickFrequency="1" IsSnapToTickEnabled="True" />
+                                            <TextBlock Grid.Column="2" x:Name="CornerValue"
+                                                       Style="{StaticResource ValueText}" HorizontalAlignment="Right" />
+                                        </Grid>
+                                        <Grid Margin="0,3,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="112" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="46" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{l:LocText appearance_padding_x}" Style="{StaticResource FieldLabel}" />
+                                            <Slider Grid.Column="1" x:Name="PadXSlider" Minimum="0" Maximum="48"
+                                                    TickFrequency="1" IsSnapToTickEnabled="True" />
+                                            <TextBlock Grid.Column="2" x:Name="PadXValue"
+                                                       Style="{StaticResource ValueText}" HorizontalAlignment="Right" />
+                                        </Grid>
+                                        <Grid Margin="0,3,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="112" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="46" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{l:LocText appearance_padding_y}" Style="{StaticResource FieldLabel}" />
+                                            <Slider Grid.Column="1" x:Name="PadYSlider" Minimum="0" Maximum="40"
+                                                    TickFrequency="1" IsSnapToTickEnabled="True" />
+                                            <TextBlock Grid.Column="2" x:Name="PadYValue"
+                                                       Style="{StaticResource ValueText}" HorizontalAlignment="Right" />
+                                        </Grid>
+                                        <Grid Margin="0,3,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="112" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="46" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{l:LocText appearance_row_spacing}" Style="{StaticResource FieldLabel}" />
+                                            <Slider Grid.Column="1" x:Name="RowGapSlider" Minimum="0" Maximum="24"
+                                                    TickFrequency="1" IsSnapToTickEnabled="True" />
+                                            <TextBlock Grid.Column="2" x:Name="RowGapValue"
+                                                       Style="{StaticResource ValueText}" HorizontalAlignment="Right" />
+                                        </Grid>
+                                        <Grid Margin="0,3,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="112" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="46" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{l:LocText appearance_column_spacing}" Style="{StaticResource FieldLabel}" />
+                                            <Slider Grid.Column="1" x:Name="ColGapSlider" Minimum="0" Maximum="40"
+                                                    TickFrequency="1" IsSnapToTickEnabled="True" />
+                                            <TextBlock Grid.Column="2" x:Name="ColGapValue"
+                                                       Style="{StaticResource ValueText}" HorizontalAlignment="Right" />
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- ===================================================== -->
+                    <!-- Metrics                                               -->
+                    <!-- ===================================================== -->
+                    <StackPanel x:Name="PanelMetrics" Visibility="Collapsed" Margin="18,14,18,16">
+                        <Grid x:Name="MetricsSectionGrid" Margin="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="{l:LocText metrics_page_title}" Style="{StaticResource PageTitle}" />
+                                <TextBlock Text="{l:LocText metrics_page_subtitle}" Style="{StaticResource PageSubtitle}" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom">
+                                <Button Content="{l:LocText metrics_show_all}" Style="{StaticResource FlatButton}"
+                                        Margin="0,0,5,0" Click="ShowAllMetrics_Click" />
+                                <Button Content="{l:LocText metrics_defaults}" Style="{StaticResource FlatButton}"
+                                        Click="DefaultMetrics_Click" />
+                            </StackPanel>
+                        </Grid>
+
+                        <StackPanel Grid.Row="1">
+                        <Border Style="{StaticResource Surface}">
+                            <StackPanel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{l:LocText fps_title}" Style="{StaticResource SectionTitle}" />
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                                        <TextBlock x:Name="FpsBackendText" Style="{StaticResource Caption}"
+                                                   VerticalAlignment="Center" Margin="0,0,7,0" />
+                                        <Button Content="{l:LocText processes_title}" Style="{StaticResource FlatButton}"
+                                                AutomationProperties.AutomationId="OpenProcessSelectionButton"
+                                                Click="OpenProcessSelection_Click" />
+                                        <Button Content="…" Style="{StaticResource ToolButton}"
+                                                AutomationProperties.AutomationId="FpsInfoToggleButton"
+                                                Click="FpsInfoToggle_Click" ToolTip="{l:LocText fps_info_tooltip}" />
+                                    </StackPanel>
+                                </Grid>
+                                <TextBlock x:Name="FpsHintText" Text="{l:LocText fps_hint}" Style="{StaticResource Muted}"
+                                           Margin="0,4,0,0" Visibility="Collapsed" TextWrapping="Wrap" />
+                                <Border Style="{StaticResource Divider}" />
+
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="1.08*" />
+                                        <ColumnDefinition Width="1*" />
+                                        <ColumnDefinition Width="1.05*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0" Margin="0,0,14,0">
+                                        <TextBlock Text="{l:LocText fps_state}" Style="{StaticResource FieldLabel}" />
+                                        <TextBlock x:Name="FpsStateText" AutomationProperties.AutomationId="FpsState"
+                                                   FontSize="12" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource TextBrush}" Margin="0,2,0,7"
+                                                   TextWrapping="Wrap" />
+                                        <TextBlock Text="{l:LocText fps_foreground}" Style="{StaticResource FieldLabel}" />
+                                        <TextBlock x:Name="FpsProcessText" AutomationProperties.AutomationId="FpsProcess"
+                                                   Style="{StaticResource ValueText}" Margin="0,2,0,0"
+                                                   TextTrimming="CharacterEllipsis" />
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="1" Margin="14,0">
+                                        <TextBlock Text="{l:LocText fps_measured}" Style="{StaticResource FieldLabel}" />
+                                        <TextBlock x:Name="FpsValueText" AutomationProperties.AutomationId="FpsValue"
+                                                   FontFamily="{DynamicResource MonoFont}" FontSize="13"
+                                                   Foreground="{DynamicResource AccentTextBrush}"
+                                                   Margin="0,2,0,7" TextWrapping="Wrap" />
+                                        <TextBlock Text="{l:LocText fps_detail_label}" Style="{StaticResource FieldLabel}" />
+                                        <TextBlock Text="{l:LocText fps_detail_short}" Style="{StaticResource Caption}"
+                                                   Margin="0,2,0,0" TextWrapping="Wrap" />
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="2" Margin="14,0,0,0">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="48" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{l:LocText fps_interval}" Style="{StaticResource FieldLabel}" />
+                                            <TextBlock Grid.Column="1" x:Name="FpsIntervalValue"
+                                                       Style="{StaticResource ValueText}" HorizontalAlignment="Right" />
+                                        </Grid>
+                                        <Slider x:Name="FpsIntervalSlider" Minimum="100" Maximum="250"
+                                                TickFrequency="10" IsSnapToTickEnabled="True" Margin="0,3,0,6" />
+                                        <TextBlock Text="{l:LocText fps_capture_mode}" Style="{StaticResource FieldLabel}" />
+                                        <ComboBox x:Name="FpsCaptureModeCombo"
+                                                  AutomationProperties.AutomationId="FpsCaptureModeCombo"
+                                                  Margin="0,2,0,0" />
+                                        <TextBlock Text="{l:LocText fps_source}" Style="{StaticResource FieldLabel}"
+                                                   Margin="0,8,0,0" />
+                                        <ComboBox x:Name="FpsModeCombo" Margin="0,2,0,0" />
+                                        <CheckBox x:Name="ChkMeasureWindowedApps"
+                                                  AutomationProperties.AutomationId="ChkMeasureWindowedApps"
+                                                  ToolTip="{l:LocText fps_measure_windowed_hint}"
+                                                  Margin="0,7,0,0">
+                                            <TextBlock Text="{l:LocText fps_measure_windowed}" TextWrapping="Wrap" />
+                                        </CheckBox>
+                                    </StackPanel>
+                                </Grid>
+
+                                <TextBlock x:Name="FpsCaptureModeHint" Text="{l:LocText fps_capture_mode_hint}"
+                                           Style="{StaticResource Caption}" Margin="0,9,0,0"
+                                           TextWrapping="Wrap" Visibility="Collapsed" />
+                                <TextBlock x:Name="FpsDetailText" AutomationProperties.AutomationId="FpsDetail"
+                                           Style="{StaticResource Muted}" Margin="0,9,0,0" Visibility="Collapsed"
+                                           TextWrapping="Wrap" />
+                                <Button x:Name="FpsElevateButton" Style="{StaticResource FlatButton}"
+                                        HorizontalAlignment="Left" Margin="0,9,0,0" Click="Elevate_Click"
+                                        Visibility="Collapsed" />
+                                <Border x:Name="EtwPermissionPanel" Style="{StaticResource InsetPanel}"
+                                        Margin="0,9,0,0" Visibility="Collapsed">
+                                    <StackPanel>
+                                        <TextBlock x:Name="EtwPermissionText" Style="{StaticResource Muted}"
+                                                   AutomationProperties.AutomationId="EtwPermissionText" />
+                                        <Button x:Name="GrantEtwButton" Style="{StaticResource FlatButton}"
+                                                AutomationProperties.AutomationId="GrantEtwButton"
+                                                HorizontalAlignment="Left" Margin="0,7,0,0"
+                                                Click="GrantEtw_Click" />
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" MinWidth="304" />
+                                <ColumnDefinition Width="12" />
+                                <ColumnDefinition Width="240" MinWidth="220" MaxWidth="360" />
+                            </Grid.ColumnDefinitions>
+
+                            <Border Grid.Column="0" Style="{StaticResource Surface}" Padding="0">
+                                <StackPanel>
+                                    <Border Padding="12,8" BorderBrush="{DynamicResource BorderBrush}"
+                                            BorderThickness="0,0,0,1">
+                                        <StackPanel>
+                                            <TextBlock Text="{l:LocText metrics_title}" Style="{StaticResource SectionTitle}" />
+                                            <TextBlock Text="{l:LocText metrics_hint}" Style="{StaticResource Muted}"
+                                                       Margin="0,3,0,0" />
+                                            <Grid Margin="0,7,0,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="160" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBox x:Name="MetricSearchBox"
+                                                         AutomationProperties.AutomationId="MetricSearchBox"
+                                                         ToolTip="{l:LocText metrics_search_hint}"
+                                                         TextChanged="MetricSearchBox_TextChanged" />
+                                                <ComboBox Grid.Column="1" x:Name="MetricCategoryCombo" Margin="6,0,0,0"
+                                                          AutomationProperties.AutomationId="MetricCategoryCombo"
+                                                          SelectionChanged="MetricCategoryCombo_SelectionChanged" />
+                                            </Grid>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <Border Background="{DynamicResource PanelAltBrush}" Padding="8,5"
+                                            BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="24" />
+                                                <ColumnDefinition Width="*" MinWidth="48" />
+                                                <ColumnDefinition Width="30" />
+                                                <ColumnDefinition Width="60" />
+                                                <ColumnDefinition Width="64" />
+                                                <ColumnDefinition Width="78" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{l:LocText metrics_on}" Style="{StaticResource TableHeaderText}" />
+                                            <TextBlock Grid.Column="1" Text="{l:LocText metrics_metric}" Style="{StaticResource TableHeaderText}" />
+                                            <TextBlock Grid.Column="2" Text="{l:LocText metrics_unit}" Style="{StaticResource TableHeaderText}" />
+                                            <TextBlock Grid.Column="3" Text="{l:LocText metrics_value}" Style="{StaticResource TableHeaderText}" />
+                                            <TextBlock Grid.Column="4" Text="{l:LocText metrics_source_status}" Style="{StaticResource TableHeaderText}" />
+                                            <TextBlock Grid.Column="5" Text="{l:LocText metrics_order}" Style="{StaticResource TableHeaderText}" />
+                                        </Grid>
+                                    </Border>
+
+                                    <ScrollViewer MaxHeight="360" VerticalScrollBarVisibility="Auto"
+                                                  HorizontalScrollBarVisibility="Disabled">
+                                        <StackPanel x:Name="MetricRowsPanel" Margin="0,1,0,4" />
+                                    </ScrollViewer>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Grid.Column="2" Style="{StaticResource Surface}">
+                                <StackPanel>
+                                    <TextBlock Text="{l:LocText metric_settings_title}" Style="{StaticResource SectionTitle}" />
+                                    <TextBlock x:Name="MetricSettingsTitle" Style="{StaticResource FieldLabel}"
+                                               Margin="0,6,0,0" />
+                                    <TextBlock x:Name="MetricSettingsHint" Style="{StaticResource Muted}"
+                                               TextWrapping="Wrap" Margin="0,3,0,0" />
+                                    <ScrollViewer MaxHeight="300" VerticalScrollBarVisibility="Auto"
+                                                  HorizontalScrollBarVisibility="Disabled">
+                                        <StackPanel x:Name="MetricSettingsFields" Margin="0,7,0,0" />
+                                    </ScrollViewer>
+                                    <WrapPanel Margin="0,9,0,0">
+                                        <Button Content="{l:LocText metric_settings_apply}"
+                                                Style="{StaticResource PrimaryButton}"
+                                                AutomationProperties.AutomationId="MetricSettingsApplyButton"
+                                                Click="MetricSettingsApply_Click" Margin="0,0,5,0" />
+                                        <Button Content="{l:LocText osd_open_builder}"
+                                                Style="{StaticResource FlatButton}"
+                                                Click="OpenOsdBuilder_Click" />
+                                    </WrapPanel>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+
+                        <Border Style="{StaticResource Surface}">
+                            <StackPanel>
+                                <TextBlock Text="{l:LocText metrics_how_title}" Style="{StaticResource SectionTitle}" />
+                                <TextBlock Text="{l:LocText metrics_how_1}" Style="{StaticResource Muted}" Margin="0,5,0,0" />
+                                <TextBlock Text="{l:LocText metrics_how_2}" Style="{StaticResource Muted}" Margin="0,4,0,0" />
+                                <TextBlock Text="{l:LocText metrics_how_3}" Style="{StaticResource Muted}" Margin="0,4,0,0" />
+                            </StackPanel>
+                        </Border>
+                            </StackPanel>
+                    </Grid>
+                    </StackPanel>
+
+                    <!-- ===================================================== -->
+                    <!-- Recording                                             -->
+                    <!-- ===================================================== -->
+                    <StackPanel x:Name="PanelRecording" Visibility="Collapsed" Margin="18,14,18,16">
+                        <Grid Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="{l:LocText recording_page_title}" Style="{StaticResource PageTitle}" />
+                                <TextBlock Text="{l:LocText recording_page_subtitle}" Style="{StaticResource PageSubtitle}" />
+                            </StackPanel>
+                            <Border Grid.Column="1" Background="{DynamicResource PanelBrush}" CornerRadius="2"
+                                    Padding="7,3" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                                    VerticalAlignment="Bottom">
+                                <StackPanel Orientation="Horizontal">
+                                    <Ellipse x:Name="RecordingStatusDot" Width="6" Height="6"
+                                             Fill="{DynamicResource DimBrush}" VerticalAlignment="Center" />
+                                    <TextBlock x:Name="RecordingStatusText" Margin="6,0,0,0" FontSize="10"
+                                               Foreground="{DynamicResource MutedBrush}" />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="420" />
+                                <ColumnDefinition Width="14" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <Border Style="{StaticResource Surface}">
+                                    <StackPanel>
+                                        <TextBlock Text="{l:LocText recording_config_title}" Style="{StaticResource SectionTitle}" />
+                                        <TextBlock Text="{l:LocText recording_config_hint}" Style="{StaticResource Muted}"
+                                                   Margin="0,4,0,0" TextWrapping="Wrap" />
+                                        <Border Style="{StaticResource Divider}" />
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="110" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{l:LocText recording_format}" Style="{StaticResource FieldLabel}" />
+                                            <ComboBox Grid.Column="1" x:Name="RecordingFormatCombo"
+                                                      AutomationProperties.AutomationId="RecordingFormatCombo" />
+                                        </Grid>
+                                        <Grid Margin="0,8,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="110" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{l:LocText recording_interval}" Style="{StaticResource FieldLabel}" />
+                                            <ComboBox Grid.Column="1" x:Name="RecordingIntervalCombo"
+                                                      AutomationProperties.AutomationId="RecordingIntervalCombo" />
+                                        </Grid>
+                                        <TextBlock Text="{l:LocText recording_output_directory}" Style="{StaticResource FieldLabel}"
+                                                   Margin="0,10,0,3" />
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBox x:Name="RecordingDirectoryBox"
+                                                     AutomationProperties.AutomationId="RecordingDirectoryBox" />
+                                            <Button Grid.Column="1" x:Name="RecordingBrowseButton"
+                                                    Content="{l:LocText recording_browse}"
+                                                    Style="{StaticResource FlatButton}" Margin="6,0,0,0"
+                                                    Click="RecordingBrowse_Click" />
+                                        </Grid>
+                                        <TextBlock Text="{l:LocText recording_file_name}" Style="{StaticResource FieldLabel}"
+                                                   Margin="0,9,0,3" />
+                                        <TextBox x:Name="RecordingFileNameBox"
+                                                 AutomationProperties.AutomationId="RecordingFileNameBox" />
+                                        <TextBlock Text="{l:LocText recording_file_hint}" Style="{StaticResource Caption}"
+                                                   Margin="0,5,0,0" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Style="{StaticResource Surface}" Padding="0">
+                                    <StackPanel>
+                                        <Border Padding="12,8" BorderBrush="{DynamicResource BorderBrush}"
+                                                BorderThickness="0,0,0,1">
+                                            <DockPanel>
+                                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                                    <Button x:Name="RecordingSelectAllButton"
+                                                            Content="{l:LocText recording_select_all}"
+                                                            Style="{StaticResource FlatButton}"
+                                                            Margin="0,0,4,0" Click="RecordingSelectAll_Click" />
+                                                    <Button x:Name="RecordingClearButton"
+                                                            Content="{l:LocText recording_clear}"
+                                                            Style="{StaticResource FlatButton}"
+                                                            Click="RecordingClear_Click" />
+                                                </StackPanel>
+                                                <TextBlock Text="{l:LocText recording_sensors}" Style="{StaticResource SectionTitle}"
+                                                           VerticalAlignment="Center" />
+                                            </DockPanel>
+                                        </Border>
+                                        <StackPanel Margin="12,8,12,10">
+                                            <TextBlock Text="{l:LocText recording_sensors_hint}" Style="{StaticResource Muted}"
+                                                       TextWrapping="Wrap" />
+                                            <Border Style="{StaticResource InsetPanel}" Padding="4" Margin="0,8,0,0">
+                                                <ScrollViewer Height="238" VerticalScrollBarVisibility="Auto">
+                                                    <StackPanel x:Name="RecordingSensorPanel" Margin="4" />
+                                                </ScrollViewer>
+                                            </Border>
+                                            <TextBlock x:Name="RecordingSensorSummaryText" Style="{StaticResource Caption}"
+                                                       Margin="0,6,0,0" TextWrapping="Wrap" />
+                                            <TextBlock Text="{l:LocText recording_refresh_hint}" Style="{StaticResource Caption}"
+                                                       Margin="0,3,0,0" TextWrapping="Wrap" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2">
+                                <Border Style="{StaticResource Surface}">
+                                    <StackPanel>
+                                        <TextBlock Text="{l:LocText recording_status_title}" Style="{StaticResource SectionTitle}" />
+                                        <Border Style="{StaticResource Divider}" />
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="130" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <TextBlock Text="{l:LocText recording_elapsed}" Style="{StaticResource FieldLabel}" Margin="0,3" />
+                                            <TextBlock Grid.Column="1" x:Name="RecordingElapsedText" Style="{StaticResource ValueText}" Margin="0,3" />
+                                            <TextBlock Grid.Row="1" Text="{l:LocText recording_samples}" Style="{StaticResource FieldLabel}" Margin="0,3" />
+                                            <TextBlock Grid.Row="1" Grid.Column="1" x:Name="RecordingSamplesText" Style="{StaticResource ValueText}" Margin="0,3" />
+                                            <TextBlock Grid.Row="2" Text="{l:LocText recording_rows}" Style="{StaticResource FieldLabel}" Margin="0,3" />
+                                            <TextBlock Grid.Row="2" Grid.Column="1" x:Name="RecordingRowsText" Style="{StaticResource ValueText}" Margin="0,3" />
+                                            <TextBlock Grid.Row="3" Text="{l:LocText recording_file_size}" Style="{StaticResource FieldLabel}" Margin="0,3" />
+                                            <TextBlock Grid.Row="3" Grid.Column="1" x:Name="RecordingSizeText" Style="{StaticResource ValueText}" Margin="0,3" />
+                                            <TextBlock Grid.Row="4" Text="{l:LocText recording_output_file}" Style="{StaticResource FieldLabel}" Margin="0,3" />
+                                            <TextBlock Grid.Row="4" Grid.Column="1" x:Name="RecordingPathText" Style="{StaticResource ValueText}"
+                                                       Margin="0,3" TextTrimming="CharacterEllipsis" ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}" />
+                                            <TextBlock Grid.Row="5" Text="{l:LocText recording_dropped}" Style="{StaticResource FieldLabel}" Margin="0,3" />
+                                            <TextBlock Grid.Row="5" Grid.Column="1" x:Name="RecordingDroppedText" Style="{StaticResource ValueText}" Margin="0,3" />
+                                        </Grid>
+                                        <TextBlock x:Name="RecordingErrorText" Style="{StaticResource Muted}"
+                                                   Foreground="{DynamicResource WarnBrush}" Margin="0,7,0,0"
+                                                   TextWrapping="Wrap" Visibility="Collapsed" />
+                                        <WrapPanel Margin="0,10,0,0">
+                                            <Button x:Name="RecordingStartButton"
+                                                    Content="{l:LocText recording_start}"
+                                                    Style="{StaticResource PrimaryButton}"
+                                                    AutomationProperties.AutomationId="RecordingStartButton"
+                                                    Margin="0,0,6,0" Click="RecordingStart_Click" />
+                                            <Button x:Name="RecordingStopButton"
+                                                    Content="{l:LocText recording_stop}"
+                                                    Style="{StaticResource DangerButton}"
+                                                    AutomationProperties.AutomationId="RecordingStopButton"
+                                                    IsEnabled="False" Margin="0,0,6,0" Click="RecordingStop_Click" />
+                                            <Button x:Name="RecordingOpenFolderButton"
+                                                    Content="{l:LocText recording_open_folder}"
+                                                    Style="{StaticResource FlatButton}"
+                                                    Click="RecordingOpenFolder_Click" />
+                                        </WrapPanel>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Style="{StaticResource Surface}" Padding="0">
+                                    <StackPanel>
+                                        <Border Padding="11,8" BorderBrush="{DynamicResource BorderBrush}"
+                                                BorderThickness="0,0,0,1">
+                                            <DockPanel>
+                                                <TextBlock Text="{l:LocText recording_history_title}"
+                                                           Style="{StaticResource SectionTitle}" VerticalAlignment="Center" />
+                                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                                    <Button Content="{l:LocText recording_history_refresh}"
+                                                            Style="{StaticResource FlatButton}"
+                                                            Click="RecordingHistoryRefresh_Click" Margin="0,0,4,0" />
+                                                    <Button Content="{l:LocText recording_history_validate}"
+                                                            Style="{StaticResource FlatButton}"
+                                                            Click="RecordingHistoryValidate_Click" />
+                                                </StackPanel>
+                                            </DockPanel>
+                                        </Border>
+                                        <StackPanel Margin="10,8,10,10">
+                                            <ListBox x:Name="RecordingHistoryList" Height="130"
+                                                     AutomationProperties.AutomationId="RecordingHistoryList"
+                                                     BorderThickness="0" Background="Transparent"
+                                                     SelectionChanged="RecordingHistoryList_SelectionChanged" />
+                                            <TextBlock x:Name="RecordingHistoryDetail" Style="{StaticResource Caption}"
+                                                       TextWrapping="Wrap" Margin="0,6,0,0" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Style="{StaticResource Surface}">
+                                    <StackPanel>
+                                        <TextBlock Text="{l:LocText recording_about_title}" Style="{StaticResource SectionTitle}" />
+                                        <TextBlock Text="{l:LocText recording_about_1}" Style="{StaticResource Muted}"
+                                                   Margin="0,5,0,0" TextWrapping="Wrap" />
+                                        <TextBlock Text="{l:LocText recording_about_2}" Style="{StaticResource Muted}"
+                                                   Margin="0,4,0,0" TextWrapping="Wrap" />
+                                        <TextBlock Text="{l:LocText recording_about_3}" Style="{StaticResource Muted}"
+                                                   Margin="0,4,0,0" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- ===================================================== -->
+                    <!-- Settings                                              -->
+                    <!-- ===================================================== -->
+                    <StackPanel x:Name="PanelSettings" Visibility="Collapsed" Margin="18,14,18,16">
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="{l:LocText settings_page_title}" Style="{StaticResource PageTitle}" />
+                            <TextBlock Text="{l:LocText settings_page_subtitle}" Style="{StaticResource PageSubtitle}" />
+                        </StackPanel>
+
+                        <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1"
+                                Margin="0,0,0,12">
+                            <WrapPanel x:Name="SettingsTabsPanel" Orientation="Horizontal" />
+                        </Border>
+
+                        <!-- General -->
+                        <StackPanel x:Name="SettingsGeneralPanel">
+                            <Border Style="{StaticResource Surface}">
+                                <StackPanel>
+                                    <TextBlock Text="{l:LocText general_title}" Style="{StaticResource SectionTitle}" />
+                                    <TextBlock Text="{l:LocText general_behavior_hint}" Style="{StaticResource Muted}"
+                                               Margin="0,4,0,0" />
+                                    <Border Style="{StaticResource Divider}" />
+                                    <UniformGrid Columns="2">
+                                        <CheckBox x:Name="ChkStartWithWindows" Content="{l:LocText general_start_with_windows}" />
+                                        <CheckBox x:Name="ChkMinimizeToTray" Content="{l:LocText general_minimize_tray}" />
+                                        <CheckBox x:Name="ChkCloseToTray" Content="{l:LocText general_close_tray}" />
+                                        <CheckBox x:Name="ChkStartMinimized" Content="{l:LocText general_start_minimized}" />
+                                        <CheckBox x:Name="ChkTrayNotifications" Content="{l:LocText general_tray_notifications}" />
+                                    </UniformGrid>
+                                    <Border Style="{StaticResource Divider}" />
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="150" />
+                                            <ColumnDefinition Width="230" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{l:LocText general_log_level}" Style="{StaticResource FieldLabel}" />
+                                        <ComboBox Grid.Column="1" x:Name="LogLevelCombo" />
+                                    </Grid>
+                                    <TextBlock Text="{l:LocText general_reset_hint}" Style="{StaticResource Muted}"
+                                               Margin="0,9,0,0" />
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource Surface}">
+                                <StackPanel>
+                                    <TextBlock Text="{l:LocText general_elevation_title}" Style="{StaticResource SectionTitle}" />
+                                    <TextBlock Text="{l:LocText general_elevation_hint}" Style="{StaticResource Muted}"
+                                               TextWrapping="Wrap" Margin="0,4,0,0" />
+                                    <TextBlock Text="{l:LocText general_elevation_benefits}" Style="{StaticResource Caption}"
+                                               TextWrapping="Wrap" Margin="0,5,0,0" />
+                                    <Button Content="{l:LocText general_restart_elevated}"
+                                            Style="{StaticResource FlatButton}" HorizontalAlignment="Left"
+                                            Margin="0,9,0,0" Click="Elevate_Click" />
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource Surface}">
+                                <StackPanel>
+                                    <TextBlock Text="{l:LocText general_maintenance}" Style="{StaticResource SectionTitle}" />
+                                    <TextBlock Text="{l:LocText general_data_hint}" Style="{StaticResource Muted}"
+                                               Margin="0,4,0,0" />
+                                    <WrapPanel Margin="0,9,0,0">
+                                        <Button Content="{l:LocText general_open_data}" Style="{StaticResource FlatButton}"
+                                                Margin="0,0,6,0" Click="OpenDataFolder_Click" />
+                                        <Button Content="{l:LocText general_open_logs}" Style="{StaticResource FlatButton}"
+                                                Margin="0,0,6,0" Click="OpenLogFolder_Click" />
+                                        <Button Content="{l:LocText general_copy_diagnostics}"
+                                                Style="{StaticResource FlatButton}" Click="CopyDiagnostics_Click" />
+                                    </WrapPanel>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- Appearance -->
+                        <StackPanel x:Name="SettingsAppearancePanel" Visibility="Collapsed">
+                            <Border Style="{StaticResource Surface}">
+                                <StackPanel>
+                                    <TextBlock Text="{l:LocText appearance_interface}" Style="{StaticResource SectionTitle}" />
+                                    <TextBlock Text="{l:LocText appearance_interface_hint}" Style="{StaticResource Muted}"
+                                               Margin="0,4,0,0" />
+                                    <Grid Margin="0,9,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="150" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{l:LocText appearance_theme}" Style="{StaticResource FieldLabel}" />
+                                        <WrapPanel Grid.Column="1" x:Name="AppThemeButtons" Orientation="Horizontal" />
+                                    </Grid>
+                                    <Grid Margin="0,9,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="150" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="96" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{l:LocText appearance_custom_accent}" Style="{StaticResource FieldLabel}" />
+                                        <Border x:Name="CustomAccentSwatch" Grid.Column="1" Width="24" Height="24"
+                                                CornerRadius="3" BorderBrush="{DynamicResource BorderStrongBrush}"
+                                                BorderThickness="1" VerticalAlignment="Center" Margin="0,0,8,0" />
+                                        <TextBox x:Name="CustomAccentBox" Grid.Column="2" IsReadOnly="True"
+                                                 AutomationProperties.AutomationId="CustomAccentBox"
+                                                 VerticalAlignment="Center" />
+                                        <Button x:Name="CustomAccentPicker" Grid.Column="3"
+                                                Content="{l:LocText appearance_custom_choose}"
+                                                Style="{StaticResource FlatButton}" Margin="8,0,0,0"
+                                                AutomationProperties.AutomationId="CustomAccentPicker" />
+                                    </Grid>
+                                    <WrapPanel x:Name="CustomAccentPalette" Margin="150,8,0,0" />
+                                    <TextBlock Text="{l:LocText appearance_custom_hint}"
+                                               Style="{StaticResource Muted}" Margin="150,7,0,0" TextWrapping="Wrap" />
+                                    <TextBlock Text="{l:LocText appearance_overlay_moved}"
+                                               Style="{StaticResource Muted}" Margin="0,9,0,0" TextWrapping="Wrap" />
+                                    <Button Content="{l:LocText appearance_open_overlay}"
+                                            Style="{StaticResource FlatButton}" HorizontalAlignment="Left"
+                                            Margin="0,8,0,0" Click="OpenOverlaySettings_Click" />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- Language -->
+                        <StackPanel x:Name="SettingsLanguagesPanel" Visibility="Collapsed">
+                            <Border Style="{StaticResource Surface}">
+                                <StackPanel>
+                                    <TextBlock Text="{l:LocText languages_title}" Style="{StaticResource SectionTitle}" />
+                                    <Grid Margin="0,9,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="150" />
+                                            <ColumnDefinition Width="230" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{l:LocText languages_language}" Style="{StaticResource FieldLabel}" />
+                                        <ComboBox Grid.Column="1" x:Name="LanguageCombo"
+                                                  AutomationProperties.AutomationId="LanguageCombo" />
+                                    </Grid>
+                                    <TextBlock Text="{l:LocText languages_hint}" Style="{StaticResource Muted}"
+                                               Margin="0,9,0,0" />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- Hotkeys -->
+                        <StackPanel x:Name="SettingsHotkeysPanel" Visibility="Collapsed">
+                            <Border Style="{StaticResource Surface}">
+                                <StackPanel>
+                                    <TextBlock Text="{l:LocText hotkeys_title}" Style="{StaticResource SectionTitle}" />
+                                    <TextBlock Text="{l:LocText hotkeys_intro}" Style="{StaticResource Muted}"
+                                               Margin="0,4,0,0" TextWrapping="Wrap" />
+                                    <CheckBox x:Name="ChkHotkey" Content="{l:LocText hotkeys_enable}"
+                                              Margin="0,7,0,8" />
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="150" />
+                                            <ColumnDefinition Width="190" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{l:LocText hotkeys_toggle_overlay}" Style="{StaticResource FieldLabel}" />
+                                        <TextBox Grid.Column="1" x:Name="HotkeyBox" IsReadOnly="True"
+                                                 AutomationProperties.AutomationId="HotkeyBox" />
+                                        <Button Grid.Column="2" x:Name="HotkeyChangeButton"
+                                                Content="{l:LocText hotkeys_change}"
+                                                Style="{StaticResource FlatButton}" Margin="6,0,5,0"
+                                                Click="HotkeyChange_Click" />
+                                        <Button Grid.Column="3" x:Name="HotkeyResetButton"
+                                                Content="{l:LocText hotkeys_reset}"
+                                                Style="{StaticResource FlatButton}"
+                                                Click="HotkeyReset_Click" />
+                                    </Grid>
+                                    <TextBlock x:Name="HotkeyStatusText" Style="{StaticResource Muted}" Margin="0,7,0,0" />
+                                    <Grid Margin="0,9,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="150" />
+                                            <ColumnDefinition Width="190" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{l:LocText hotkeys_toggle_main}" Style="{StaticResource FieldLabel}" />
+                                        <TextBox Grid.Column="1" x:Name="MainHotkeyBox" IsReadOnly="True"
+                                                 AutomationProperties.AutomationId="MainHotkeyBox" />
+                                        <Button Grid.Column="2" x:Name="MainHotkeyChangeButton"
+                                                Content="{l:LocText hotkeys_change}"
+                                                Style="{StaticResource FlatButton}" Margin="6,0,5,0"
+                                                Click="MainHotkeyChange_Click" />
+                                        <Button Grid.Column="3" x:Name="MainHotkeyResetButton"
+                                                Content="{l:LocText hotkeys_reset}"
+                                                Style="{StaticResource FlatButton}"
+                                                Click="MainHotkeyReset_Click" />
+                                    </Grid>
+                                    <TextBlock x:Name="MainHotkeyStatusText" Style="{StaticResource Muted}" Margin="0,7,0,0" />
+                                    <Border Style="{StaticResource Divider}" />
+                                    <TextBlock Text="{l:LocText hotkeys_recording}" Style="{StaticResource SectionTitle}" />
+                                    <Grid Margin="0,6,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="150" />
+                                            <ColumnDefinition Width="190" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{l:LocText hotkeys_start_recording}" Style="{StaticResource FieldLabel}" />
+                                        <TextBox Grid.Column="1" x:Name="StartRecordHotkeyBox" IsReadOnly="True"
+                                                 AutomationProperties.AutomationId="StartRecordHotkeyBox" />
+                                        <Button Grid.Column="2" x:Name="StartRecordHotkeyChangeButton"
+                                                Content="{l:LocText hotkeys_change}"
+                                                Style="{StaticResource FlatButton}" Margin="6,0,5,0"
+                                                AutomationProperties.AutomationId="StartRecordHotkeyChangeButton"
+                                                Click="StartRecordHotkeyChange_Click" />
+                                        <Button Grid.Column="3" x:Name="StartRecordHotkeyResetButton"
+                                                Content="{l:LocText hotkeys_reset}"
+                                                Style="{StaticResource FlatButton}"
+                                                AutomationProperties.AutomationId="StartRecordHotkeyResetButton"
+                                                Click="StartRecordHotkeyReset_Click" />
+                                    </Grid>
+                                    <Grid Margin="0,6,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="150" />
+                                            <ColumnDefinition Width="190" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{l:LocText hotkeys_stop_recording}" Style="{StaticResource FieldLabel}" />
+                                        <TextBox Grid.Column="1" x:Name="StopRecordHotkeyBox" IsReadOnly="True"
+                                                 AutomationProperties.AutomationId="StopRecordHotkeyBox" />
+                                        <Button Grid.Column="2" x:Name="StopRecordHotkeyChangeButton"
+                                                Content="{l:LocText hotkeys_change}"
+                                                Style="{StaticResource FlatButton}" Margin="6,0,5,0"
+                                                AutomationProperties.AutomationId="StopRecordHotkeyChangeButton"
+                                                Click="StopRecordHotkeyChange_Click" />
+                                        <Button Grid.Column="3" x:Name="StopRecordHotkeyResetButton"
+                                                Content="{l:LocText hotkeys_reset}"
+                                                Style="{StaticResource FlatButton}"
+                                                AutomationProperties.AutomationId="StopRecordHotkeyResetButton"
+                                                Click="StopRecordHotkeyReset_Click" />
+                                    </Grid>
+                                    <Grid Margin="0,6,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="150" />
+                                            <ColumnDefinition Width="190" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{l:LocText hotkeys_restart_app}" Style="{StaticResource FieldLabel}" />
+                                        <TextBox Grid.Column="1" x:Name="RestartHotkeyBox" IsReadOnly="True"
+                                                 AutomationProperties.AutomationId="RestartHotkeyBox" />
+                                        <Button Grid.Column="2" x:Name="RestartHotkeyChangeButton"
+                                                Content="{l:LocText hotkeys_change}"
+                                                Style="{StaticResource FlatButton}" Margin="6,0,5,0"
+                                                AutomationProperties.AutomationId="RestartHotkeyChangeButton"
+                                                Click="RestartHotkeyChange_Click" />
+                                        <Button Grid.Column="3" x:Name="RestartHotkeyResetButton"
+                                                Content="{l:LocText hotkeys_reset}"
+                                                Style="{StaticResource FlatButton}"
+                                                AutomationProperties.AutomationId="RestartHotkeyResetButton"
+                                                Click="RestartHotkeyReset_Click" />
+                                    </Grid>
+                                    <TextBlock x:Name="ActionHotkeyStatusText" Style="{StaticResource Muted}" Margin="0,7,0,0" />
+                                    <Border Style="{StaticResource Divider}" />
+                                    <TextBlock Text="{l:LocText general_overlay_interaction}" Style="{StaticResource SectionTitle}" />
+                                    <TextBlock Text="{l:LocText general_modifier_drag_hint}" Style="{StaticResource Muted}"
+                                               Margin="0,4,0,0" TextWrapping="Wrap" />
+                                    <CheckBox x:Name="ChkModifierDrag" Content="{l:LocText general_modifier_drag_enable}"
+                                              AutomationProperties.AutomationId="ChkModifierDrag"
+                                              Margin="0,8,0,6" />
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="150" />
+                                            <ColumnDefinition Width="190" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{l:LocText general_modifier_drag_key}" Style="{StaticResource FieldLabel}" />
+                                        <TextBox Grid.Column="1" x:Name="DragHotkeyBox" IsReadOnly="True"
+                                                 AutomationProperties.AutomationId="DragHotkeyBox" />
+                                        <Button Grid.Column="2" x:Name="DragHotkeyChangeButton"
+                                                Content="{l:LocText hotkeys_change}"
+                                                Style="{StaticResource FlatButton}" Margin="6,0,5,0"
+                                                AutomationProperties.AutomationId="DragHotkeyChangeButton"
+                                                Click="DragHotkeyChange_Click" />
+                                        <Button Grid.Column="3" x:Name="DragHotkeyResetButton"
+                                                Content="{l:LocText hotkeys_reset}"
+                                                Style="{StaticResource FlatButton}"
+                                                AutomationProperties.AutomationId="DragHotkeyResetButton"
+                                                Click="DragHotkeyReset_Click" />
+                                    </Grid>
+                                    <TextBlock x:Name="DragHotkeyStatusText" Style="{StaticResource Muted}" Margin="0,7,0,0" />
+                                    <TextBlock Text="{l:LocText hotkeys_hint}" Style="{StaticResource Muted}"
+                                               Margin="0,7,0,0" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- System -->
+                        <StackPanel x:Name="SettingsSystemPanel" Visibility="Collapsed">
+                            <Border Style="{StaticResource Surface}">
+                                <StackPanel>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel>
+                                            <TextBlock Text="{l:LocText system_info_title}" Style="{StaticResource SectionTitle}"
+                                                       AutomationProperties.AutomationId="SystemInfoTitle" />
+                                            <TextBlock Text="{l:LocText system_info_hint}" Style="{StaticResource Muted}"
+                                                       Margin="0,4,0,0" TextWrapping="Wrap" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top"
+                                                    Margin="12,0,0,0">
+                                            <TextBlock x:Name="SystemInfoUpdatedText" Style="{StaticResource Muted}"
+                                                       AutomationProperties.AutomationId="SystemInfoUpdated"
+                                                       VerticalAlignment="Center" Margin="0,0,8,0" />
+                                            <Button x:Name="RefreshSystemInfoButton"
+                                                    Content="{l:LocText system_info_refresh}"
+                                                    Style="{StaticResource FlatButton}"
+                                                    AutomationProperties.AutomationId="RefreshSystemInfo"
+                                                    Click="RefreshSystemInfo_Click" />
+                                        </StackPanel>
+                                    </Grid>
+                                    <TextBlock x:Name="SystemInfoErrorText" Style="{StaticResource Muted}"
+                                               Margin="0,7,0,0" TextWrapping="Wrap" Visibility="Collapsed" />
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource Surface}">
+                                <StackPanel>
+                                    <TextBlock Text="{l:LocText system_info_windows}" Style="{StaticResource SectionTitle}" />
+                                    <StackPanel x:Name="SystemWindowsRows" Margin="0,6,0,0" />
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource Surface}">
+                                <StackPanel>
+                                    <TextBlock Text="{l:LocText system_info_cpu}" Style="{StaticResource SectionTitle}" />
+                                    <StackPanel x:Name="SystemCpuRows" Margin="0,6,0,0" />
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource Surface}">
+                                <StackPanel>
+                                    <TextBlock Text="{l:LocText system_info_ram}" Style="{StaticResource SectionTitle}" />
+                                    <StackPanel x:Name="SystemRamRows" Margin="0,6,0,0" />
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource Surface}">
+                                <StackPanel>
+                                    <TextBlock Text="{l:LocText system_info_motherboard}" Style="{StaticResource SectionTitle}" />
+                                    <StackPanel x:Name="SystemMotherboardRows" Margin="0,6,0,0" />
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource Surface}">
+                                <StackPanel>
+                                    <TextBlock Text="{l:LocText system_info_gpus}" Style="{StaticResource SectionTitle}" />
+                                    <StackPanel x:Name="SystemGpuRows" Margin="0,6,0,0" />
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource Surface}">
+                                <StackPanel>
+                                    <TextBlock Text="{l:LocText system_info_storage}" Style="{StaticResource SectionTitle}" />
+                                    <StackPanel x:Name="SystemStorageRows" Margin="0,6,0,0" />
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource Surface}">
+                                <StackPanel>
+                                    <TextBlock Text="{l:LocText system_monitoring}" Style="{StaticResource SectionTitle}" />
+                                    <Grid Margin="0,8,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="150" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="48" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{l:LocText system_poll_interval}" Style="{StaticResource FieldLabel}" />
+                                        <Slider Grid.Column="1" x:Name="PollSlider" Minimum="200" Maximum="5000"
+                                                TickFrequency="100" />
+                                        <TextBlock Grid.Column="2" x:Name="PollValue"
+                                                   Style="{StaticResource ValueText}" HorizontalAlignment="Right" />
+                                    </Grid>
+                                    <Grid Margin="0,3,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="150" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="48" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{l:LocText system_overlay_refresh}" Style="{StaticResource FieldLabel}" />
+                                        <Slider Grid.Column="1" x:Name="RefreshSlider" Minimum="1" Maximum="20"
+                                                TickFrequency="1" IsSnapToTickEnabled="True" />
+                                        <TextBlock Grid.Column="2" x:Name="RefreshValue"
+                                                   Style="{StaticResource ValueText}" HorizontalAlignment="Right" />
+                                    </Grid>
+                                    <TextBlock Text="{l:LocText system_rate_hint}" Style="{StaticResource Muted}"
+                                               Margin="0,7,0,0" />
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource Surface}">
+                                <StackPanel>
+                                    <TextBlock Text="{l:LocText system_sources}" Style="{StaticResource SectionTitle}" />
+                                    <UniformGrid Columns="2" Margin="0,7,0,0">
+                                        <CheckBox x:Name="ChkNvml" Content="{l:LocText system_nvml}" />
+                                        <CheckBox x:Name="ChkLhm" Content="{l:LocText system_lhm}" />
+                                        <CheckBox x:Name="ChkMsiAcpi" Content="{l:LocText system_msi_acpi}" />
+                                        <CheckBox x:Name="ChkMsiFanBroker" Content="{l:LocText system_msi_fan_broker}"
+                                                  AutomationProperties.AutomationId="ChkMsiFanBroker" />
+                                        <CheckBox x:Name="ChkTzone" Content="{l:LocText system_thermal}" />
+                                        <CheckBox x:Name="ChkUnavailable" Content="{l:LocText system_show_na}" />
+                                    </UniformGrid>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource Surface}">
+                                <StackPanel>
+                                    <TextBlock Text="{l:LocText system_live}" Style="{StaticResource SectionTitle}" />
+                                    <Grid Margin="0,7,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="150" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{l:LocText system_cache}" Style="{StaticResource FieldLabel}" />
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock x:Name="QuickSensors" Style="{StaticResource ValueText}" />
+                                            <TextBlock x:Name="QuickPoll" Style="{StaticResource Muted}" Margin="0,2,0,0" />
+                                            <TextBlock x:Name="QuickSources" Style="{StaticResource Muted}" Margin="0,2,0,0" />
+                                            <TextBlock x:Name="ElevationText" Style="{StaticResource Muted}" Margin="0,6,0,0" />
+                                        </StackPanel>
+                                    </Grid>
+                                    <TextBlock Text="{l:LocText system_admin_note}" Style="{StaticResource Muted}"
+                                               Margin="0,8,0,0" />
+                                    <WrapPanel Margin="0,9,0,0">
+                                        <Button x:Name="RestartAdminButton"
+                                                Content="{l:LocText system_restart_admin}" Style="{StaticResource FlatButton}"
+                                                Click="Elevate_Click" />
+                                    </WrapPanel>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- Diagnostics -->
+                        <StackPanel x:Name="SettingsDiagnosticsPanel" Visibility="Collapsed">
+                            <Border Style="{StaticResource Surface}">
+                                <StackPanel>
+                                    <TextBlock Text="{l:LocText diagnostics_fps}" Style="{StaticResource SectionTitle}" />
+                                    <Grid Margin="0,8,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="170" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+
+                                        <TextBlock Text="{l:LocText diagnostics_fps_events}" Style="{StaticResource FieldLabel}" Margin="0,3" />
+                                        <TextBlock Grid.Column="1" x:Name="DiagFpsEventsText" AutomationProperties.AutomationId="DiagFpsEvents" Style="{StaticResource ValueText}" Margin="0,3" />
+
+                                        <TextBlock Grid.Row="1" Text="{l:LocText diagnostics_fps_presents}" Style="{StaticResource FieldLabel}" Margin="0,3" />
+                                        <TextBlock Grid.Row="1" Grid.Column="1" x:Name="DiagFpsPresentsText" AutomationProperties.AutomationId="DiagFpsPresents" Style="{StaticResource ValueText}" Margin="0,3" />
+
+                                        <TextBlock Grid.Row="2" Text="{l:LocText diagnostics_fps_foreground}" Style="{StaticResource FieldLabel}" Margin="0,3" />
+                                        <TextBlock Grid.Row="2" Grid.Column="1" x:Name="DiagFpsForegroundText" AutomationProperties.AutomationId="DiagFpsForeground" Style="{StaticResource ValueText}" Margin="0,3" />
+
+                                        <TextBlock Grid.Row="3" Text="{l:LocText diagnostics_fps_session}" Style="{StaticResource FieldLabel}" Margin="0,3" />
+                                        <TextBlock Grid.Row="3" Grid.Column="1" x:Name="DiagFpsSessionText" AutomationProperties.AutomationId="DiagFpsSession" Style="{StaticResource ValueText}" Margin="0,3" />
+
+                                        <TextBlock Grid.Row="4" Text="{l:LocText diagnostics_fps_last}" Style="{StaticResource FieldLabel}" Margin="0,3" />
+                                        <TextBlock Grid.Row="4" Grid.Column="1" x:Name="DiagFpsLastText" AutomationProperties.AutomationId="DiagFpsLast" Style="{StaticResource ValueText}" Margin="0,3" />
+
+                                        <TextBlock Grid.Row="5" Text="{l:LocText diagnostics_fps_capture_mode}" Style="{StaticResource FieldLabel}" Margin="0,3" />
+                                        <TextBlock Grid.Row="5" Grid.Column="1" x:Name="DiagFpsCaptureModeText" AutomationProperties.AutomationId="DiagFpsCaptureMode" Style="{StaticResource ValueText}" Margin="0,3" />
+
+                                        <TextBlock Grid.Row="6" Text="{l:LocText diagnostics_fps_target}" Style="{StaticResource FieldLabel}" Margin="0,3" />
+                                        <TextBlock Grid.Row="6" Grid.Column="1" x:Name="DiagFpsTargetText" AutomationProperties.AutomationId="DiagFpsTarget" Style="{StaticResource ValueText}" Margin="0,3" />
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource Surface}">
+                                <StackPanel>
+                                    <TextBlock Text="{l:LocText diagnostics_sensor_access}" Style="{StaticResource SectionTitle}" />
+                                    <TextBlock Text="{l:LocText diagnostics_sensor_access_hint}" Style="{StaticResource Muted}"
+                                               Margin="0,4,0,0" TextWrapping="Wrap" />
+                                    <Grid Margin="0,8,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="180" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <TextBlock Text="{l:LocText diagnostics_elevation}" Style="{StaticResource FieldLabel}" Margin="0,3" />
+                                        <TextBlock Grid.Column="1" x:Name="DiagElevationText" Style="{StaticResource ValueText}" Margin="0,3" />
+                                        <TextBlock Grid.Row="1" Text="{l:LocText diagnostics_pawnio}" Style="{StaticResource FieldLabel}" Margin="0,3" />
+                                        <TextBlock Grid.Row="1" Grid.Column="1" x:Name="DiagPawnIoText" Style="{StaticResource ValueText}"
+                                                   Margin="0,3" TextWrapping="Wrap" />
+                                        <TextBlock Grid.Row="2" Text="{l:LocText diagnostics_fan_channels}" Style="{StaticResource FieldLabel}" Margin="0,3" />
+                                        <TextBlock Grid.Row="2" Grid.Column="1" x:Name="DiagFanChannelsText"
+                                                   AutomationProperties.AutomationId="DiagFanChannels"
+                                                   Style="{StaticResource ValueText}" Margin="0,3" TextWrapping="Wrap" />
+                                        <TextBlock Grid.Row="3" Text="{l:LocText diagnostics_msi_acpi}" Style="{StaticResource FieldLabel}" Margin="0,3" />
+                                        <TextBlock Grid.Row="3" Grid.Column="1" x:Name="DiagMsiAcpiText"
+                                                   AutomationProperties.AutomationId="DiagMsiAcpi"
+                                                   Style="{StaticResource ValueText}" Margin="0,3" TextWrapping="Wrap" />
+                                        <TextBlock Grid.Row="4" Text="{l:LocText diagnostics_msi_broker}" Style="{StaticResource FieldLabel}" Margin="0,3" />
+                                        <TextBlock Grid.Row="4" Grid.Column="1" x:Name="DiagMsiBrokerText"
+                                                   AutomationProperties.AutomationId="DiagMsiBroker"
+                                                   Style="{StaticResource ValueText}" Margin="0,3" TextWrapping="Wrap" />
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource Surface}">
+                                <StackPanel>
+                                    <TextBlock Text="{l:LocText diagnostics_sensor_audit}" Style="{StaticResource SectionTitle}" />
+                                    <TextBlock Text="{l:LocText diagnostics_audit_hint}" Style="{StaticResource Muted}"
+                                               Margin="0,4,0,0" />
+                                    <WrapPanel Margin="0,9,0,0">
+                                        <Button Content="{l:LocText diagnostics_save_audit}" Style="{StaticResource FlatButton}"
+                                                AutomationProperties.AutomationId="SaveSensorAudit"
+                                                Margin="0,0,6,0" Click="SaveSensorAudit_Click" />
+                                        <Button Content="{l:LocText general_copy_diagnostics}"
+                                                Style="{StaticResource FlatButton}" Click="CopyDiagnostics_Click" />
+                                    </WrapPanel>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- About -->
+                        <StackPanel x:Name="SettingsAboutPanel" Visibility="Collapsed">
+                            <Border Style="{StaticResource Surface}">
+                                <StackPanel>
+                                    <TextBlock Text="HardwareOSD" Style="{StaticResource H1}" />
+                                    <Border Style="{StaticResource Divider}" />
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="150" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <TextBlock Text="{l:LocText diagnostics_version_label}" Style="{StaticResource FieldLabel}" />
+                                        <TextBlock Grid.Column="1" x:Name="VersionInfoText"
+                                                   AutomationProperties.AutomationId="VersionInfoText"
+                                                   Style="{StaticResource ValueText}" TextWrapping="Wrap" />
+                                        <TextBlock Grid.Row="1" Text="{l:LocText diagnostics_interfaces}"
+                                                   Style="{StaticResource FieldLabel}" Margin="0,7,0,0"
+                                                   VerticalAlignment="Top" />
+                                        <TextBlock Grid.Row="1" Grid.Column="1" x:Name="InterfacesText"
+                                                   Style="{StaticResource Muted}" Margin="0,7,0,0" />
+                                    </Grid>
+                                    <Border Style="{StaticResource Divider}" />
+                                    <TextBlock Text="{l:LocText diagnostics_privacy}" Style="{StaticResource Muted}" />
+                                    <TextBlock Text="{l:LocText about_license}" Style="{StaticResource Muted}"
+                                               Margin="0,4,0,0" />
+                                    <WrapPanel Margin="0,9,0,0">
+                                        <Button Content="{l:LocText general_copy_diagnostics}"
+                                                Style="{StaticResource FlatButton}" Click="CopyDiagnostics_Click" />
+                                    </WrapPanel>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+            </ScrollViewer>
+        </Grid>
+
+        <!-- Compact footer: monitoring information and controls only. Transient messages are
+             logged instead of reserving a second row, so numeric values cannot reflow the buttons. -->
+        <Border Grid.Row="1" Padding="12,4" Background="{DynamicResource ChromeBrush}"
+                BorderBrush="{DynamicResource PanelAltBrush}" BorderThickness="0,1,0,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="300" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Kept for source compatibility with existing status calls; it is deliberately
+                     collapsed and reserves no height. -->
+                <TextBlock x:Name="FooterStatus" Visibility="Collapsed" />
+
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Ellipse x:Name="StatusDot" Width="6" Height="6"
+                             Fill="{DynamicResource DimBrush}" VerticalAlignment="Center" />
+                    <TextBlock x:Name="StatusText" Margin="6,0,10,0" FontSize="10"
+                               Foreground="{DynamicResource MutedBrush}" VerticalAlignment="Center" />
+                    <Border Width="1" Height="12" Background="{DynamicResource BorderBrush}" Margin="0,0,10,0" />
+                    <TextBlock x:Name="MonitoringSummaryText" FontSize="10" MaxWidth="190"
+                               Foreground="{DynamicResource DimBrush}" VerticalAlignment="Center"
+                               TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center"
+                            Margin="6,0,0,0">
+                    <Button x:Name="SaveNowButton" Style="{StaticResource PrimaryButton}"
+                            Margin="0,0,5,0" Click="Save_Click"
+                            AutomationProperties.AutomationId="FooterSave"
+                            AutomationProperties.Name="{l:LocText footer_save}">
+                        <Grid>
+                            <TextBlock x:Name="SaveNowLabel" Text="{l:LocText footer_save}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <TextBlock x:Name="SaveSavedLabel" Text="{l:LocText msg_settings_saved}"
+                                       Opacity="0" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Grid>
+                    </Button>
+                    <Button Content="{l:LocText footer_reload}" Style="{StaticResource FlatButton}"
+                            Margin="0,0,5,0" Click="Reload_Click" />
+                    <Button Content="{l:LocText footer_reset}" Style="{StaticResource FlatButton}"
+                            Margin="0,0,10,0" Click="Reset_Click" />
+                </StackPanel>
+                <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center"
+                            Margin="14,0,0,0">
+                    <Button x:Name="ToggleMonitoringButton" Style="{StaticResource FlatButton}"
+                            MinWidth="96" HorizontalContentAlignment="Center"
+                            Margin="0,0,5,0" Click="ToggleMonitoring_Click" />
+                    <Button Content="{l:LocText footer_hide}" Style="{StaticResource FlatButton}"
+                            Margin="0,0,5,0" Click="HideToTray_Click" />
+                    <Button Content="{l:LocText footer_exit}" Style="{StaticResource DangerButton}"
+                            Click="Exit_Click" />
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

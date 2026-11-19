@@ -1,0 +1,64 @@
+# Build output
+bin/
+obj/
+dist/
+publish/
+*.user
+*.suo
+.vs/
+
+# Test artifacts
+TestResults/
+tests/**/testdata/
+*.trx
+coverage*.xml
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Local QA output
+layout-qa/
+docs/screenshots/
+*.png.bak
+
+# Third-party reference checkouts (inspection only; never shipped)
+reference/
+
+# OS noise
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Workspace-local agent configuration
+opencode.json
+opencode.json.bak-*
+
+# Autopilot run state and logs
+.opencode-autopilot/
+
+# Local settings, logs and crash data
+settings.json
+settings.json.bak
+*.log
+*.dmp
+*.tmp
+*.temp
+~$*
+
+# Secrets and certificates (never commit)
+.env
+.env.local
+.env.*.local
+secrets.json
+credentials.json
+*.pfx
+*.p12
+*.key
+*.pem
+*.snk
+
+# IDE noise
+.idea/
+.vscode/
+*.DotSettings.user

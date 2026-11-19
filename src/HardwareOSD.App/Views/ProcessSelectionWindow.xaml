@@ -1,0 +1,79 @@
+<Window x:Class="HardwareOSD.App.Views.ProcessSelectionWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:l="clr-namespace:HardwareOSD.App.Localization"
+        Title="{l:LocText processes_title}"
+        Width="800" Height="580" MinWidth="680" MinHeight="480"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource AppBackgroundBrush}"
+        Foreground="{DynamicResource TextBrush}"
+        FontFamily="{DynamicResource UiFont}">
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1.35*" MinWidth="320" />
+            <ColumnDefinition Width="12" />
+            <ColumnDefinition Width="*" MinWidth="280" />
+        </Grid.ColumnDefinitions>
+
+        <Border Grid.Column="0" Style="{StaticResource Surface}" Padding="0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <StackPanel Margin="11,9">
+                    <DockPanel>
+                        <TextBlock Text="{l:LocText processes_running}" Style="{StaticResource SectionTitle}"
+                                   VerticalAlignment="Center" />
+                        <Button DockPanel.Dock="Right" Content="{l:LocText processes_refresh}"
+                                Style="{StaticResource FlatButton}" Click="RefreshProcesses_Click" />
+                    </DockPanel>
+                    <TextBox x:Name="ProcessSearchBox" Margin="0,7,0,0"
+                             ToolTip="{l:LocText processes_search}" TextChanged="ProcessSearchBox_TextChanged" />
+                </StackPanel>
+                <ListBox Grid.Row="1" x:Name="ProcessList" Margin="8,0,8,8"
+                         BorderThickness="0" Background="Transparent"
+                         SelectionChanged="ProcessList_SelectionChanged" />
+            </Grid>
+        </Border>
+
+        <StackPanel Grid.Column="2">
+            <Border Style="{StaticResource Surface}">
+                <StackPanel>
+                    <TextBlock Text="{l:LocText processes_ignored}" Style="{StaticResource SectionTitle}" />
+                    <ListBox x:Name="IgnoreList" Height="180" Margin="0,6,0,0"
+                             BorderThickness="0" Background="Transparent" />
+                    <WrapPanel Margin="0,7,0,0">
+                        <Button Content="{l:LocText processes_add_ignore}" Style="{StaticResource FlatButton}"
+                                Click="AddIgnore_Click" Margin="0,0,5,0" />
+                        <Button Content="{l:LocText processes_remove_ignore}" Style="{StaticResource FlatButton}"
+                                Click="RemoveIgnore_Click" />
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource Surface}">
+                <StackPanel>
+                    <TextBlock Text="{l:LocText processes_capture_hotkey}" Style="{StaticResource FieldLabel}" />
+                    <TextBox x:Name="CaptureHotkeyBox" Margin="0,3,0,7" />
+                    <TextBlock Text="{l:LocText processes_capture_duration}" Style="{StaticResource FieldLabel}" />
+                    <TextBox x:Name="CaptureDurationBox" Margin="0,3,0,7" />
+                    <TextBlock Text="{l:LocText processes_capture_delay}" Style="{StaticResource FieldLabel}" />
+                    <TextBox x:Name="CaptureDelayBox" Margin="0,3,0,0" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+
+        <StackPanel Grid.Row="1" Grid.ColumnSpan="3" Orientation="Horizontal"
+                    HorizontalAlignment="Right" Margin="0,10,0,0">
+            <Button Content="{l:LocText processes_save}" Style="{StaticResource PrimaryButton}"
+                    Click="Save_Click" Margin="0,0,6,0" />
+            <Button Content="{l:LocText processes_cancel}" Style="{StaticResource FlatButton}"
+                    Click="Cancel_Click" />
+        </StackPanel>
+    </Grid>
+</Window>
